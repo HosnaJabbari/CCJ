@@ -28,6 +28,33 @@
 #include "common.h"
 
 
+// ----------------------------------------
+// provide a generic way for caching of function results
+//
+// @see penalty_by_size() for an example
+//
+#include <map>
+
+// define NO_CACHED_CALLS to deactivate caching
+// #define NO_CACHED_CALLS 1
+
+template <typename Return, typename Function, typename ... Args>
+Return
+cached_call(const Function &f, const Args& ... args) {
+#ifndef NO_CACHED_CALLS
+    static std::map< std::tuple<Args...>, PARAMTYPE > cache;
+    const auto key = std::make_tuple(args...);
+    try{
+        return cache.at( key );
+    } catch(const std::out_of_range& e) {
+        return ( cache[ key ] = f(args...) );
+    }
+#else
+    return f(args...);
+#endif
+}
+// ----------------------------------------
+
 PARAMTYPE asymmetry_penalty (int size1, int size2)
 {
     PARAMTYPE penalty = 0;
@@ -78,8 +105,6 @@ PARAMTYPE asymmetry_penalty (int size1, int size2)
     if (size1 + size2 <= MAXLOOP_I)      return internal_asymmetry [abs (size1-size2)];
     return internal_asymmetry[MAXLOOP_I-2];    */
 }
-
-
 
 void get_sorted_positions (int n, double numbers[], int positions[])
 // used by suboptimal sorting
@@ -650,8 +675,8 @@ PARAMTYPE IL_penalty_by_size_2D (int size1, int size2)
 */
 
 
-
-PARAMTYPE penalty_by_size (int size, char type)
+inline
+PARAMTYPE penalty_by_size_uncached (int size, char type)
 // PRE:  size is the size of the loop
 //       type is HAIRP or INTER or BULGE
 // POST: return the penalty by size of the loop
@@ -731,6 +756,12 @@ PARAMTYPE penalty_by_size (int size, char type)
 
     return penalty;
 }
+
+PARAMTYPE
+penalty_by_size (int size, char type) {
+    return cached_call<PARAMTYPE> (penalty_by_size_uncached, size, type);
+}
+
 
 
 PARAMTYPE penalty_by_size_enthalpy (int size, char type)
