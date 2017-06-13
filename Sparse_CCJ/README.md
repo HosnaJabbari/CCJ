@@ -16,10 +16,10 @@ To install first insure you have [downloaded the repository](https://github.com/
 Then run from a command line in the Sparse_CCJ directory:    
 ```
 autoreconf -i     
-./configure SIMFOLD_HOME=<path to Simfold library>    
+./configure SIMFOLD_HOME=<path to Simfold installation>    
 make     
 ```
-where \<path to Simfold library> is where Simfold was installed. The default path is /usr/local. If you did not specify a custom prefix when installing Simfold, use /usr/local.   
+where \<path to Simfold installation> is where Simfold was installed. The default path is /usr/local. If you did not specify a custom prefix when installing Simfold, use /usr/local.   
 
 Example:   
 ```
@@ -38,7 +38,6 @@ where \<sequence> is the input RNA sequence and \<arguments> are detailed below.
 Valid agruments include:   
 -ns to use non-sparse or "Modifed CCJ" version  
 -ngc to not use garbage collection for Sparse CCJ
-
 
 -shape="filename" to specify a file for shape data   
 -b=number to specify an intercept for the shape data (default is -0.600000)   

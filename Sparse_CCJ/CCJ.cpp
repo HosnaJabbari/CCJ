@@ -16,7 +16,6 @@
 #include "params.h"
 
 #include "cmd_line_options.h"
-#include "shape_data.h"
 
 #include "CCJ.h"
 
@@ -35,7 +34,7 @@ int main (int argc, char *argv[])
     bool w = false;
 
     // important that this is before set_shape_file
-    shape.set_sequence_length(strlen(sequence));
+    cmd_line_options.set_sequence_length(strlen(sequence));
 
     if (argc < 2)
         cmd_line_error = true;
@@ -51,7 +50,7 @@ int main (int argc, char *argv[])
                 if (!strcmp(arg, "-ngc"))
                     cmd_line_options.set_use_garbage_collection(false);
                 else
-		if (!strcmp(arg, "-w"))
+                if (!strcmp(arg, "-w"))
                     w = true;
                 else
                 if (!strcmp(arg, "-pta"))
@@ -67,7 +66,7 @@ int main (int argc, char *argv[])
                     cmd_line_options.set_print_candidate_list_info(2);
                 else
                 if (!strncmp(arg, "-shape=", 7))
-                    shape.set_shape_file(std::string(arg));
+                    cmd_line_options.set_shape_file(std::string(arg));
                 else
                 if (!strncmp(arg, "-b=",3)) {
                     std::string str = std::string(arg);
@@ -99,17 +98,17 @@ int main (int argc, char *argv[])
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 
-        printf ("-shape=\"filename\" to specify a file for shape data\n");
-        printf ("-b=number to specify an intercept for the shape data (default is %f)\n",shape.b());
-        printf ("-m=number to specify a slope for the shape data (default is %f)\n\n",shape.m());
+        //printf ("-shape=\"filename\" to specify a file for shape data\n");
+        //printf ("-b=number to specify an intercept for the shape data (default is %f)\n",shape.b());
+        //printf ("-m=number to specify a slope for the shape data (default is %f)\n\n",shape.m());
 
-	printf ("-w to print only the result and energy\n");
+        printf ("-w to print only the result and energy\n");
         printf ("-pta to print information on the number of trace arrows\n");
         printf ("-pta-v to print verbose trace arrow information\n");
         printf ("-pcl to print information on the candidate lists\n");
         printf ("-pcl-v to print verbose candidate list information\n");
-        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC -shape=shapedata.txt -b=0.64 -ns\n", argv[0]);
-        return 0;
+        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC -shape=shapedata.txt b=0.64 -ns\n", argv[0]);
+        return -1;
     }
     cmd_line_options.set_done();
 
