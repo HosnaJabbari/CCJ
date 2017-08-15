@@ -46,26 +46,30 @@
 //#define asymmetry_penalty(size1, size2) (MIN (misc.asymmetry_penalty_max_correction, abs (size1-size2) * misc.asymmetry_penalty_array [MIN (2, MIN ((size1), (size2)))-1]))
 
 // Ian Wark Jun 8 2017
-// Array [0..30][0..nb_nucleotides-1]
-// 3 arrays for each H,B,I
+// Class for holding precomputed asymmetry penalties
+// input size1 < MAXLOOP and size2 < nb_nucleotides-1
+// Array [0..MAXLOOP][0..nb_nucleotides-1]
 class asymmetry_penalties_class {
 private:
     std::vector< std::vector<PARAMTYPE> > arr;
-    int max_size;
-
-    asymmetry_penalties_class(asymmetry_penalties_class&) { }
+  
 public:
+    // creates and fills the precomputed penalty vector
+    // nb_nucleotides is the length of the sequence (number of nucleotides)
     asymmetry_penalties_class(int nb_nucleotides);
 
     ~asymmetry_penalties_class() {}
+  
     inline PARAMTYPE get_asymmetry_penalty(int size1, char size2) {
         return arr[size1][size2];
     }
 
 };
 
+// external pointer to the object: create_asymmetry_penalties has to be called to create the object first
 extern std::unique_ptr<asymmetry_penalties_class> asymmetry_penalties;
 
+// Simply creates the class object with nb_nucleotides and assigns it to the pointer
 void create_asymmetry_penalties(int nb_nucleotides);
 
 inline PARAMTYPE asymmetry_penalty (int size1, int size2)
@@ -96,10 +100,10 @@ double compute_pf_ppv (char *ref_structure, s_partition_function *part, double t
 // part is the partition function object, which contains base pair probabilities
 // returns -1 if undefined (denominator is 0)
 
-void giveup (char *string1, char *string2);
+void giveup (const char *string1, const char *string2);
 // to add: variable nb of parameters, as in scanf, printf
 
-void giveup2 (char *string1, char *string2, FILE *file);
+void giveup2 (const char *string1, const char *string2, FILE *file);
 // to add: variable nb of parameters, as in scanf, printf
 
 void create_random_sequence (int length, char *sequence);
@@ -136,20 +140,20 @@ int is_nucleotide (char base);
 // POST: return true if base is a nucleotide (A, C, G or T)
 //       return false otherwise
 
-
 void check_sequence (char *sequence);
 // check sequence for length and alphabet
 
 // Ian Wark Jun 8 2017
-// Array [0..2][0..nb_nucleotides-1]
+// Class for holding precomputed size penalties
 // 3 arrays for each H,B,I
+// Array [0..2][0..nb_nucleotides-1]
 class size_penalties_class {
 private:
     std::vector< std::vector<PARAMTYPE> > arr;
-    int max_size;
-
-    size_penalties_class(size_penalties_class&) { }
+  
 public:
+    // creates and fills the precomputed penalty vector
+    // nb_nucleotides is the length of the sequence (number of nucleotides)
     size_penalties_class(int nb_nucleotides);
 
     ~size_penalties_class() {}
@@ -163,12 +167,14 @@ public:
 
 };
 
+// external pointer to the object: create_size_penalties has to be called to create the object first
 extern std::unique_ptr<size_penalties_class> size_penalties;
 
+// Simply creates the class object with nb_nucleotides and assigns it to the pointer
 void create_size_penalties(int nb_nucleotides);
 
 inline PARAMTYPE penalty_by_size (int size, char type)
-// PRE:  size is the size of the loop
+// PRE:  size is the size of the loop (0...nb_nucleotides-1)
 //       type is HAIRP or INTER or BULGE
 // POST: return the penalty by size of the loop
 {

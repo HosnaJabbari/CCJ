@@ -28,18 +28,17 @@ int main (int argc, char *argv[])
     char structures[MAXSUBSTR][MAXSLEN];
     double energies[MAXSUBSTR];
 
-    strcpy (sequence, argv[1]);
-
     bool cmd_line_error = false;
     bool w = false;
-
-    // important that this is before set_shape_file
-    cmd_line_options.set_sequence_length(strlen(sequence));
 
     if (argc < 2)
         cmd_line_error = true;
     else
     {
+        strcpy (sequence, argv[1]);
+	// important that this is before set_shape_file
+        cmd_line_options.set_sequence_length(strlen(sequence));
+
         if (argc > 2) {
             for (int i = 2; i < argc; ++i) {
                 char * arg = argv[i];
@@ -72,7 +71,7 @@ int main (int argc, char *argv[])
                     std::string str = std::string(arg);
                     str = str.substr(3,str.length()-2);
                     if (shape.is_number(str))
-                        shape.set_b(stof(str));
+                        shape.set_b(atof(str.c_str()));
                     else
                         cmd_line_error = true;
                 }
@@ -81,7 +80,7 @@ int main (int argc, char *argv[])
                     std::string str = std::string(arg);
                     str = str.substr(3,str.length()-2);
                     if (shape.is_number(str))
-                        shape.set_m(stof(str));
+                        shape.set_m(atof(str.c_str()));
                     else
                         cmd_line_error = true;
                 }
@@ -107,7 +106,7 @@ int main (int argc, char *argv[])
         printf ("-pta-v to print verbose trace arrow information\n");
         printf ("-pcl to print information on the candidate lists\n");
         printf ("-pcl-v to print verbose candidate list information\n");
-        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC -shape=shapedata.txt b=0.64 -ns\n", argv[0]);
+        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC \n", argv[0]);
         return -1;
     }
     cmd_line_options.set_done();
@@ -119,7 +118,7 @@ int main (int argc, char *argv[])
 
     // configuration file, the path should be relative to the location of this executable
     char config_file[200];
-    strcpy (config_file, SIMFOLD_HOME "/share/simfold/params/multirnafold.conf");
+    strcpy (config_file, SIMFOLD_HOME "/params/multirnafold.conf");
 
     // what to fold: RNA or DNA
     int dna_or_rna;
@@ -137,12 +136,12 @@ int main (int argc, char *argv[])
 
 	// Hosna, July 18, 2012
 	// In simfold we have the following for RNA && temp=37
-	fill_data_structures_with_new_parameters (SIMFOLD_HOME "/share/simfold/params/turner_parameters_fm363_constrdangles.txt");
+	fill_data_structures_with_new_parameters (SIMFOLD_HOME "/params/turner_parameters_fm363_constrdangles.txt");
 
 	// Hosna, July 25, 2012
 	// in HotKnots and ComputeEnergy package the most up-to-date parameters set is DP09.txt
 	// so we add it here
-	fill_data_structures_with_new_parameters (SIMFOLD_HOME "/share/simfold/params/parameters_DP09.txt");
+	fill_data_structures_with_new_parameters (SIMFOLD_HOME "/params/parameters_DP09.txt");
 
 	energy = ccj(sequence, structure);
 
