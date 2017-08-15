@@ -16,6 +16,7 @@
 #include "params.h"
 
 #include "cmd_line_options.h"
+#include "shape_data.h"
 
 #include "CCJ.h"
 
@@ -37,7 +38,7 @@ int main (int argc, char *argv[])
     {
         strcpy (sequence, argv[1]);
 	// important that this is before set_shape_file
-        cmd_line_options.set_sequence_length(strlen(sequence));
+        shape.set_sequence_length(strlen(sequence));
 
         if (argc > 2) {
             for (int i = 2; i < argc; ++i) {
@@ -65,7 +66,7 @@ int main (int argc, char *argv[])
                     cmd_line_options.set_print_candidate_list_info(2);
                 else
                 if (!strncmp(arg, "-shape=", 7))
-                    cmd_line_options.set_shape_file(std::string(arg));
+                    shape.set_shape_file(std::string(arg));
                 else
                 if (!strncmp(arg, "-b=",3)) {
                     std::string str = std::string(arg);
@@ -93,7 +94,7 @@ int main (int argc, char *argv[])
 
     if (cmd_line_error) {
         printf ("Usage: %s <sequence> <arguments>\n", argv[0]);
-        printf ("Valid agruments include: \n");
+        printf ("Valid arguments include: \n");
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 
@@ -131,7 +132,7 @@ int main (int argc, char *argv[])
 
     // initialize the thermodynamic parameters
     // call init_data only once for the same dna_or_rna and same temperature
-    // if one of them changes, call init_data again  
+    // if one of them changes, call init_data again
     init_data (argv[0], config_file, dna_or_rna, temperature);
 
 	// Hosna, July 18, 2012
