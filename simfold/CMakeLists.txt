@@ -10,7 +10,8 @@ endif()
 
 SET(SOURCE
   src/common/params.cpp src/common/common.cpp	
-  src/common/init.cpp 			
+  src/common/init.cpp 		
+  shape_data.cpp
   src/simfold/s_specific_functions.cpp src/simfold/s_min_folding.cpp	
   src/simfold/s_hairpin_loop.cpp src/simfold/s_stacked_pair.cpp		
   src/simfold/s_energy_matrix.cpp src/simfold/s_internal_loop.cpp	
