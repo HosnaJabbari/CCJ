@@ -22,17 +22,13 @@ void shape_info::set_shape_file(std::string filename) {
     shape_file_ = filename;
     use_shape_data_ = true;
 
-    shape.set_data(shape_file_);
+    set_data(shape_file_);
 }
 
 void shape_info::set_data(std::string filename) {
     // open the file
     std::ifstream infile;
     infile.open(filename, std::ifstream::in);
-
-    // size of data is sequence length
-    int seq_len = sequence_length();
-    data_ = new double[seq_len+1]; // data_[0] is not used - starts from 1
 
     // first line may be the sequence
     std::string input;
@@ -48,25 +44,25 @@ void shape_info::set_data(std::string filename) {
 
     // the first number is in input
     // it starts from 1
-    data_[1] = stof(input);
+    data_.push_back(stof(input));
     // go through where each word is a shape data number
-    int i = 2;
+    int i = 1;
     while (infile >> input) {
-        if (i > seq_len) {
-            printf("SHAPE data file error: length greater than sequence length (sequence length = %d)\n",seq_len);
+        if (i > sequence_length()) {
+            printf("SHAPE data file error: length greater than sequence length (sequence length = %d)\n",sequence_length());
             exit(-1);
         }
         if (!is_number(input)) {
-            printf("SHAPE data file error: line after start is not a number\n",i,seq_len);
+            printf("SHAPE data file error: line after start is not a number\n",i,sequence_length());
             exit(-1);
         }
 
-        data_[i] = stof(input);
+        data_.push_back(stof(input));
         ++i;
     }
 
-    if (i-1 != seq_len) {
-        printf("SHAPE data file error: length less than sequence length (%d compared to %d)\n",i-1,seq_len);
+    if (i != sequence_length()) {
+        printf("SHAPE data file error: length less than sequence length (%d compared to %d)\n",i-1,sequence_length());
         exit(-1);
     }
 

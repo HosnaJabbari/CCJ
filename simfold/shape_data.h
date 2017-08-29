@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 class shape_info
 {
@@ -9,11 +10,12 @@ private:
     /// Also, they should be with the other values, not here
     float b_ = -0.6; // intercept
     float m_ = 1.8; // slope
-    int seq_len_;
-    double *data_;
+    int seq_len_ = -1;
 
     bool use_shape_data_ = false;
     std::string shape_file_;
+
+    std::vector<double> data_;
 
 public:
     shape_info() {}

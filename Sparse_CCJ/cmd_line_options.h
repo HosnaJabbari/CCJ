@@ -58,6 +58,5 @@ public:
 }cmd_line_args;
 
 extern cmd_line_args cmd_line_options;
-//extern shape_info shape;
 
 
