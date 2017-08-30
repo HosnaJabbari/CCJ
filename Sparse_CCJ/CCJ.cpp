@@ -98,9 +98,9 @@ int main (int argc, char *argv[])
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 
-        //printf ("-shape=\"filename\" to specify a file for shape data\n");
-        //printf ("-b=number to specify an intercept for the shape data (default is %f)\n",shape.b());
-        //printf ("-m=number to specify a slope for the shape data (default is %f)\n\n",shape.m());
+        printf ("-shape=\"filename\" to specify a file for shape data\n");
+        printf ("-b=number to specify an intercept for the shape data (default is %f)\n",shape.b());
+        printf ("-m=number to specify a slope for the shape data (default is %f)\n\n",shape.m());
 
         printf ("-w to print only the result and energy\n");
         printf ("-pta to print information on the number of trace arrows\n");
