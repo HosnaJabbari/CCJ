@@ -79,7 +79,7 @@ PARAMTYPE s_stacked_pair::compute_energy (int i, int j)
             min = min + to_add;
         }
 
-        float calculated = (shape.m() * log(shape.data(j)+1)) + shape.b();
+        calculated = (shape.m() * log(shape.data(j)+1)) + shape.b();
 
         if (!isnan(calculated)) {
             // energies are stored as ints, with the original decimal form multiplied by 100
