@@ -62,39 +62,33 @@ PARAMTYPE s_stacked_pair::compute_energy (int i, int j)
 //     else if (sequence[j-1] == 0 && sequence[i+1] == 3 && sequence[j] == 0 && sequence[i] == 3)
 //         local_energy = stack[0][3][0][3];
 //     else
-//         local_energy = -100; 
+//         local_energy = -100;
 
-	
+
     min = V_energy + local_energy;
 
     // Ian Wark, April 12 2017
     // if using shape data, add to min
     if (shape.use_shape_data()) {
         // formula is m ln[SHAPE+1]+b
-        // if negative log returns NAN so data[i]+1 must be greater than 0
-        if (shape.data(i) > 0) {
-            float calculated = (shape.m() * log(shape.data(i)+1)) + shape.b();
+        float calculated = (shape.m() * log(shape.data(i)+1)) + shape.b();
 
-            if (!isnan(calculated)) {
-                // energies are stored as ints, with the original decimal form multiplied by 100
-                PARAMTYPE to_add = (PARAMTYPE)(calculated*100);
-                min = min + to_add;
-            }
+        if (!isnan(calculated)) {
+            // energies are stored as ints, with the original decimal form multiplied by 100
+            PARAMTYPE to_add = (PARAMTYPE)(calculated*100);
+            min = min + to_add;
         }
 
-        if (shape.data(j) > 0) {
-            float calculated = (shape.m() * log(shape.data(j)+1)) + shape.b();
+        float calculated = (shape.m() * log(shape.data(j)+1)) + shape.b();
 
-            if (!isnan(calculated)) {
-                // energies are stored as ints, with the original decimal form multiplied by 100
-                PARAMTYPE to_add = (PARAMTYPE)(calculated*100);
-                min = min + to_add;
-
-            }
+        if (!isnan(calculated)) {
+            // energies are stored as ints, with the original decimal form multiplied by 100
+            PARAMTYPE to_add = (PARAMTYPE)(calculated*100);
+            min = min + to_add;
         }
 
     }
-    
+
     // add the loss
     if (pred_pairings != NULL)
     {
@@ -110,8 +104,8 @@ PARAMTYPE s_stacked_pair::compute_energy_restricted (int i, int j, str_features 
 {
 	if (fres[i].pair == j && fres[j].pair==i && !can_pair(sequence[i],sequence[j])){
 		return V->get_energy (i+1,j-1);
-	}else if (fres[i].pair == j && fres[j].pair==i && 
-			  fres[i+1].pair == j-1 && fres[j-1].pair==i+1 && 
+	}else if (fres[i].pair == j && fres[j].pair==i &&
+			  fres[i+1].pair == j-1 && fres[j-1].pair==i+1 &&
 			  !can_pair(sequence[i+1],sequence[j-1])){
 		return V->get_energy (i+1,j-1);
 	}
@@ -141,12 +135,12 @@ PARAMTYPE s_stacked_pair::get_energy (int i, int j, int *sequence)
 //         return stack[0][3][0][3];
 //     else
 //         return -100;
-	
+
 	PARAMTYPE energy= stack [sequence[i]]
 							[sequence[j]]
 							[sequence[i+1]]
 							[sequence[j-1]];
-    
+
     return energy;
 }
 
