@@ -29,6 +29,10 @@ void shape_info::set_data(std::string filename) {
     // open the file
     std::ifstream infile;
     infile.open(filename, std::ifstream::in);
+    if(infile.fail()) {
+        fprintf(stderr,"SHAPE data file error: error opening file\n");
+        exit(-1);
+    }
 
     // Vector is double the size it needs to be because otherwise there is problems with memory
     // and for reasons I don't understand it gives bad results at large sequence sizes. 
@@ -48,7 +52,7 @@ void shape_info::set_data(std::string filename) {
     while (infile >> input && !is_number(input)) {}
 
     if (!is_number(input)) {
-        printf("SHAPE data file error: file has no numbers in it\n");
+        fprintf(stderr, "SHAPE data file error: file has no numbers in it\n");
         exit(-1);
     }
 
@@ -58,11 +62,11 @@ void shape_info::set_data(std::string filename) {
     int i = 0;
     while (valid) {
         if (i > sequence_length()) {
-            printf("SHAPE data file error: length greater than sequence length (sequence length = %d)\n",sequence_length());
+            fprintf(stderr, "SHAPE data file error: length greater than sequence length (sequence length = %d)\n",sequence_length());
             exit(-1);
         }
         if (!is_number(input)) {
-            printf("SHAPE data file error: line after start is not a number\n",i,sequence_length());
+            fprintf(stderr, "SHAPE data file error: line after start is not a number\n",i,sequence_length());
             exit(-1);
         }
 
@@ -74,7 +78,7 @@ void shape_info::set_data(std::string filename) {
     }
 
     if (i != sequence_length()) {
-        printf("SHAPE data file error: length less than sequence length (%d compared to %d)\n",i-1,sequence_length());
+        fprintf(stderr, "SHAPE data file error: length less than sequence length (%d compared to %d)\n",i-1,sequence_length());
         exit(-1);
     }
 
