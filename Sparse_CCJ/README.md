@@ -26,6 +26,9 @@ Valid agruments include:
 -ns to use non-sparse or "Modifed CCJ" version  
 -ngc to not use garbage collection for Sparse CCJ
 
+You can also include SHAPE data to be used. 
+The SHAPE data must be in a file with 1 number per line.
+The number corresponds with each nucleotide in order, and the file must be exactly the same length as the sequence.
 -shape="filename" to specify a file for shape data   
 -b=number to specify an intercept for the shape data (default is -0.600000)   
 -m=number to specify a slope for the shape data (default is 1.800000)   
@@ -48,4 +51,8 @@ To use the Modified CCJ version:
 To use Sparse CCJ with no garbage collection, printing out information on the number of trace arrows used:
 ```
 ./CCJ GCAACGAUGACAUACAUCGCUAGUCGACGC -ngc -pta
+```
+To use Sparse CCJ with SHAPE data:
+```
+./CCJ GCAACGAUGACAUACAUCGCUAGUCGACGC -shape=filename -b=-0.5 -m=1.5
 ```

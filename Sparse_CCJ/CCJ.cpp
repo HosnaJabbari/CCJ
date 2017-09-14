@@ -100,6 +100,9 @@ int main (int argc, char *argv[])
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 
+	printf ("You can also include SHAPE data to be used.\n");
+	printf ("The SHAPE data must be in a file with 1 number per line.\n");
+	printf ("The number corresponds with each nucleotide in order, and the file must be exactly the same length as the sequence.\n");
         printf ("-shape=\"filename\" to specify a file for shape data\n");
         printf ("-b=number to specify an intercept for the shape data (default is %f)\n",shape.b());
         printf ("-m=number to specify a slope for the shape data (default is %f)\n\n",shape.m());
@@ -109,7 +112,9 @@ int main (int argc, char *argv[])
         printf ("-pta-v to print verbose trace arrow information\n");
         printf ("-pcl to print information on the candidate lists\n");
         printf ("-pcl-v to print verbose candidate list information\n");
-        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC \n", argv[0]);
+        printf ("Example: %s GCAACGAUGACAUACAUCGCUAGUCGACGC \n\n", argv[0]);
+
+	printf ("See README.md for more details.\n");
         return -1;
     }
     cmd_line_options.set_done();
