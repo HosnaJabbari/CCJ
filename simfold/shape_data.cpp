@@ -7,9 +7,6 @@ shape_info shape = shape_info();
 
 // prepares filename to be stored in shape_file
 void shape_info::set_shape_file(std::string filename) {
-    // cut off first 7 characters ("-shape=")
-    filename = filename.substr(7,filename.length()-6);
-
     auto front = filename.front();
     auto back = filename.back();
 

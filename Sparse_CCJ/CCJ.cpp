@@ -66,6 +66,8 @@ int main (int argc, char *argv[])
                     cmd_line_options.set_print_candidate_list_info(2);
                 else
                 if (!strncmp(arg, "-shape=", 7))
+                    // cut off first 7 characters ("-shape=")
+                    filename = filename.substr(7,filename.length()-6);
                     shape.set_shape_file(std::string(arg));
                 else
                 if (!strncmp(arg, "-b=",3)) {
