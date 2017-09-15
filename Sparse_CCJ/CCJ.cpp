@@ -65,10 +65,12 @@ int main (int argc, char *argv[])
                 if (!strcmp(arg, "-pcl-v"))
                     cmd_line_options.set_print_candidate_list_info(2);
                 else
-                if (!strncmp(arg, "-shape=", 7))
+                if (!strncmp(arg, "-shape=", 7)) {
                     // cut off first 7 characters ("-shape=")
+                    std::string filename = std::string(arg);
                     filename = filename.substr(7,filename.length()-6);
-                    shape.set_shape_file(std::string(arg));
+                    shape.set_shape_file(filename);
+                }
                 else
                 if (!strncmp(arg, "-b=",3)) {
                     std::string str = std::string(arg);
