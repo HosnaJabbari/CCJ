@@ -350,12 +350,22 @@ void s_min_folding::backtrack (seq_interval *cur_interval)
             for (k = i+TURN+1; k <= j-TURN-2; k++)
             {
                 tmp = VM->get_energy_WM (i+1,k) + VM->get_energy_WM (k+1, j-1);
+
+                if (DANGLE_MODE == 2) {
+                    tmp +=
+                        dangle_top [int_sequence [i]][int_sequence [j]][int_sequence [i+1]]
+                        + dangle_bot [int_sequence[i]][int_sequence[j]][int_sequence[j-1]];
+                }
+
                 if (tmp < min)
                 {
                     min = tmp;
                     best_k = k;
                     best_row = 1;
                 }
+
+                if (DANGLE_MODE != 1) continue;
+
                 tmp = VM->get_energy_WM (i+2,k) + VM->get_energy_WM (k+1, j-1) + 
 						dangle_top [int_sequence[i]][int_sequence[j]][int_sequence[i+1]] + 
                         misc.multi_free_base_penalty;
@@ -449,6 +459,16 @@ void s_min_folding::backtrack (seq_interval *cur_interval)
             if (energy_ij < INF)
             {
                 tmp = energy_ij + AU_penalty (int_sequence[i],int_sequence[j]) + acc;
+
+                if (DANGLE_MODE == 2) {
+                    if ( j<nb_nucleotides) {
+                        tmp += dangle_top [sequence [j]][sequence [i]][sequence [j+1]];
+                    }
+                    if ( i>0 ) {
+                        tmp += dangle_bot [sequence[j]][sequence[i]][sequence[i-1]];
+                    }
+                }
+
                 if (tmp < min)
                 {
                     min = tmp;
@@ -456,6 +476,9 @@ void s_min_folding::backtrack (seq_interval *cur_interval)
                     best_row = 1;
                 }
             }        
+
+            if ( DANGLE_MODE !=1 ) continue;
+
             energy_ij = V->get_energy(i+1,j);            
             if (energy_ij < INF)
             {
@@ -559,12 +582,24 @@ void s_min_folding::backtrack (seq_interval *cur_interval)
         tmp = V->get_energy(i,j) +
             AU_penalty (int_sequence[i], int_sequence[j]) +
             misc.multi_helix_penalty;
+
+        if (DANGLE_MODE == 2) {
+            if ( j<nb_nucleotides) {
+                tmp += dangle_top [sequence [j]][sequence [i]][sequence [j+1]];
+            }
+            if ( i>0 ) {
+                tmp += dangle_bot [sequence[j]][sequence[i]][sequence[i-1]];
+            }
+        }
+
         if (tmp < min)
         {
             min = tmp;
             best_row = 1;
         }
     
+        if ( DANGLE_MODE == 1) {
+
         tmp = V->get_energy(i+1,j) +
                 AU_penalty (int_sequence[i+1], int_sequence[j]) +
                 dangle_bot [int_sequence[j]]
@@ -626,6 +661,8 @@ void s_min_folding::backtrack (seq_interval *cur_interval)
             best_row = 4;
         }
             
+        } // end DANGLE_MODE == 1
+
         tmp = VM->get_energy_WM (i+1,j) + misc.multi_free_base_penalty;
         // add the loss
         if (pred_pairings != NULL)

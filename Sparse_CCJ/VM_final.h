@@ -22,7 +22,8 @@ public:
 		this->p = P;
 	}
 	void set_VM_matrix(s_multi_loop *vm){s_vm = vm;}
-	void compute_energy(int i, int j);
+	// void compute_energy(int i, int j); // SW Sep 15, 2017 -- this method is NOT USED
+
 	int get_energy(int i, int j);
 	void WM_compute_energy(int i, int j);
 	void set_WM_matrix(int *m){this->WM = m;}

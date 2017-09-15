@@ -60,6 +60,8 @@ s_multi_loop::~s_multi_loop ()
 
 void s_multi_loop::compute_energy_WM (int j)
 // compute de MFE of a partial multi-loop closed at (i,j)
+// SW: not necessarily closed by base pair at (i,j);
+// includes case of split into i,k and k+1,j
 {
     int i;
     PARAMTYPE tmp;
@@ -71,13 +73,29 @@ void s_multi_loop::compute_energy_WM (int j)
         int ijminus1 = index[i]+j-1-i;
 
 
+        // no dangle or dangle 2
         tmp = V->get_energy(i,j) +
                    AU_penalty (sequence[i], sequence[j]) +
                    misc.multi_helix_penalty;
+
+        if (DANGLE_MODE == 2) {
+            // outer dangles for inner base pair (i,j) of ML
+            if ( j+1<seqlen) {
+                tmp += dangle_top [sequence [j]][sequence [i]][sequence [j+1]];
+            }
+            if ( i>0 ) {
+                tmp += dangle_bot [sequence[j]][sequence[i]][sequence[i-1]];
+            }
+        }
+
         if (tmp < WM[ij])
           {
             WM[ij] = tmp;
           }
+
+
+        if (DANGLE_MODE == 1) {
+
         tmp = V->get_energy(i+1,j) +
                   AU_penalty (sequence[i+1], sequence[j]) +
                   dangle_bot [sequence[j]]
@@ -135,6 +153,7 @@ void s_multi_loop::compute_energy_WM (int j)
         {
                 WM[ij] = tmp;
         }
+        } // end DANGLE_MODE == 1
 
         tmp = WM[iplus1j] + misc.multi_free_base_penalty;            
         // add the loss
@@ -193,9 +212,20 @@ PARAMTYPE s_multi_loop::compute_energy (int i, int j)
         kplus1jminus2 = index[k+1] + j-2 -k-1;
         
         tmp = WM[iplus1k] + WM[kplus1jminus1];
+
+        if (DANGLE_MODE == 2) {
+            //inner dangles for closing base pair (i,j)
+            tmp +=
+                dangle_top [sequence [i]][sequence [j]][sequence [i+1]]
+                + dangle_bot [sequence[i]][sequence[j]][sequence[j-1]];
+        }
+
         if (tmp < min)
             min = tmp;
               
+
+        if (DANGLE_MODE != 1) continue;
+
         tmp = WM[iplus2k] + WM[kplus1jminus1] + 
               dangle_top [sequence [i]]
               [sequence [j]]
