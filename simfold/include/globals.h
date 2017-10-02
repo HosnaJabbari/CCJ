@@ -33,6 +33,11 @@ int max_internal_loop = MAXLOOP;
 int *constraints;
 int fix_dangles = 0;
 
+// global for which dangle mode to use
+// mode number models Vienna RNA's -d option
+// 1 is normal, original CCJ. 2 is used for compatibility with Vienna RNA
+int DANGLE_MODE = 1;
+
 int *known_pairings = NULL;    // used for the loss-augmented prediction
 int *pred_pairings = NULL;
 
