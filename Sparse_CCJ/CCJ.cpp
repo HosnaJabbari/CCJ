@@ -50,9 +50,13 @@ int main (int argc, char *argv[])
                 if (!strcmp(arg, "-ngc"))
                     cmd_line_options.set_use_garbage_collection(false);
                 else
-                //
+                //  -d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option
                 if (!strcmp(arg,"-d2") || !strcmp(arg,"-dangle2"))
                     DANGLE_MODE = 2;
+                else
+                // -vh to handle hairpins more similarily to ViennaRNA
+                if (!strcmp(arg,"-vh"))
+                    VIENNA_HAIRPIN = 2;
                 else
                 // -w special simple printing option
                 if (!strcmp(arg, "-w"))
@@ -83,7 +87,8 @@ int main (int argc, char *argv[])
     if (cmd_line_error) {
         printf ("Usage: %s <sequence> <arguments>\n", argv[0]);
         printf ("Valid arguments include: \n");
-        printf ("-d2 or -dangle2 to handle dangling ends like ViennaRNAs -d2 option\n");
+        printf ("-d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option\n");
+        printf ("-vh to handle hairpins more similarily to ViennaRNA\n");
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 
