@@ -54,8 +54,10 @@ class W_final: public s_min_folding{
 
 
         int compute_W_br2 (int j);
+        // reduce W to V
 
 		int compute_W_br3 (int j);
+        // reduce W to P
 
         void print_result();
         // PRE:  The matrix V has been calculated and the results written in f
@@ -65,7 +67,10 @@ class W_final: public s_min_folding{
 	// Hosna Feb 18, 2014
 	// This function goes over the f array and fills the structure knowing which base pairs with which
 
-
+        int outer_dangles(int i, int j);
+        // Sebastian, Sep 7, 2017:
+        // energy contributions of left and right dangling end of stem closed by i and j;
+        // use for d2 mode
 
 };
 

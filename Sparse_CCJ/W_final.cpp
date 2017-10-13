@@ -221,7 +221,17 @@ void W_final::compute_W(int j)
 	}
 }
 
-
+int
+W_final::outer_dangles(int i, int j) {
+    int tmp=0;
+    if ( j+1<nb_nucleotides) {
+        tmp = dangle_top [int_sequence [j]][int_sequence [i]][int_sequence [j+1]];
+    }
+    if ( i>0 ) {
+        tmp += dangle_bot [int_sequence[j]][int_sequence[i]][int_sequence[i-1]];
+    }
+    return tmp;
+}
 
 int W_final::compute_W_br2(int j)
 {
@@ -242,12 +252,18 @@ int W_final::compute_W_br2(int j)
         if (energy_ij < INF)
         {
             tmp = energy_ij + acc+ AU_penalty (int_sequence[i],int_sequence[j]);
+            if ( DANGLE_MODE == 2 ) {
+                tmp += outer_dangles(i,j);
+            }
+
             if (tmp < min_energy)
             {
                 min_energy = tmp;
                 chosen = 21;        best_i = i;
             }
         }
+
+        if (DANGLE_MODE!=1) { continue; }
 
         energy_ij = v->get_energy(i+1,j);
 		if (energy_ij < INF)
@@ -343,6 +359,10 @@ int W_final::compute_W_br3(int j){
 	                best_i = i;
 	            }
 	        }
+
+            // @todo SW---please check, it looks to me like the following
+            // cases 32--34 should be covered already (since there is never dangling
+            // for the PK cases)
 
 	        energy_ij = P->get_energy(i+1,j);
 			if (energy_ij < INF)
@@ -499,6 +519,12 @@ void W_final::backtrack(seq_interval *cur_interval){
 					for (k = i+TURN+1; k <= j-TURN-2; k++)
 					  {
 						tmp = vm->get_energy_WM (i+1,k) + vm->get_energy_WM (k+1, j-1);
+
+                        if (DANGLE_MODE == 2) {
+                            tmp += dangle_top [int_sequence[i]][int_sequence[j]][int_sequence[i+1]]
+                                + dangle_bot [int_sequence[i]][int_sequence[j]][int_sequence[j-1]];
+                        }
+
 						if (tmp < min_energy)
 						  {
 							min_energy = tmp;
@@ -506,6 +532,7 @@ void W_final::backtrack(seq_interval *cur_interval){
 							best_row = 1;
 						  }
 
+                        if (DANGLE_MODE == 1) {
 						  tmp = vm->get_energy_WM (i+2,k) + vm->get_energy_WM (k+1, j-1) +
 							dangle_top [int_sequence[i]][int_sequence[j]][int_sequence[i+1]] +
 							misc.multi_free_base_penalty;
@@ -539,7 +566,7 @@ void W_final::backtrack(seq_interval *cur_interval){
 							best_k = k;
 							best_row = 4;
 						}
-
+                        } // end DANLGE_MODE==1
 
 						// Hosna: June 28, 2007
 						// the last branch of VM, which is WMB_(i+1),(j-1)
@@ -614,6 +641,10 @@ void W_final::backtrack(seq_interval *cur_interval){
 				if (energy_ij < INF)
 				{
 					tmp = energy_ij + acc + AU_penalty (int_sequence[i],int_sequence[j]);
+                    if (DANGLE_MODE == 2) {
+                        tmp += outer_dangles(i,j);
+                    }
+
 					if (tmp < min_energy)
 					{
 						min_energy = tmp;
@@ -621,6 +652,8 @@ void W_final::backtrack(seq_interval *cur_interval){
 						best_row = 1;
 					}
 				}
+
+                if (DANGLE_MODE != 1) { continue; }
 
 				energy_ij = v->get_energy(i+1,j);
 				if (energy_ij < INF)
@@ -814,11 +847,17 @@ void W_final::backtrack(seq_interval *cur_interval){
 				AU_penalty (int_sequence[i], int_sequence[j]) +
 				misc.multi_helix_penalty;
 
+            if (DANGLE_MODE==2) {
+                tmp += outer_dangles(i,j);
+            }
+
 			if (tmp < min_energy)
 			{
 				min_energy = tmp;
 				best_row = 1;
 			}
+
+            if ( DANGLE_MODE == 1 ) {
 			tmp = v->get_energy(i+1,j) +
 					AU_penalty (int_sequence[i+1], int_sequence[j]) +
 					dangle_bot [int_sequence[j]]
@@ -862,6 +901,7 @@ void W_final::backtrack(seq_interval *cur_interval){
 				min_energy = tmp;
 				best_row = 4;
 			}
+            }
 
 			tmp = vm->get_energy_WM (i+1,j) + misc.multi_free_base_penalty;
 			if (tmp < min_energy)

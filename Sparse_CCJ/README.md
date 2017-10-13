@@ -22,9 +22,10 @@ Run from a command line in Sparse_CCJ directory:
 ```
 where \<sequence> is the input RNA sequence and \<arguments> are detailed below.
 
-Valid agruments include:   
+Valid arguments include:   
+-d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option   
 -ns to use non-sparse or "Modifed CCJ" version  
--ngc to not use garbage collection for Sparse CCJ
+-ngc to not use garbage collection for Sparse CCJ   
 
 -shape="filename" to specify a file for shape data   
 -b=number to specify an intercept for the shape data (default is -0.600000)   

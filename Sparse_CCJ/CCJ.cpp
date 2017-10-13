@@ -42,24 +42,35 @@ int main (int argc, char *argv[])
             for (int i = 2; i < argc; ++i) {
                 char * arg = argv[i];
 
+                // -ns Do not use sparse ("modified CCJ")
                 if (!strcmp(arg, "-ns"))
                     cmd_line_options.set_use_sparse(false);
                 else
+                // -ngc Do not use garbage collection
                 if (!strcmp(arg, "-ngc"))
                     cmd_line_options.set_use_garbage_collection(false);
                 else
+                //  -d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option
+                if (!strcmp(arg,"-d2") || !strcmp(arg,"-dangle2"))
+                    DANGLE_MODE = 2;
+                else
+                // -w special simple printing option
                 if (!strcmp(arg, "-w"))
                     w = true;
                 else
+                // -pta to print information on the number of trace arrows
                 if (!strcmp(arg, "-pta"))
                     cmd_line_options.set_print_trace_arrow_info(1);
                 else
+                // -pta-v to print verbose trace arrow information
                 if (!strcmp(arg, "-pta-v"))
                     cmd_line_options.set_print_trace_arrow_info(2);
                 else
+                // -pcl to print information on the candidate lists
                 if (!strcmp(arg, "-pcl"))
                     cmd_line_options.set_print_candidate_list_info(1);
                 else
+                // -pcl-v to print verbose candidate list information
                 if (!strcmp(arg, "-pcl-v"))
                     cmd_line_options.set_print_candidate_list_info(2);
                 else
@@ -72,6 +83,8 @@ int main (int argc, char *argv[])
     if (cmd_line_error) {
         printf ("Usage: %s <sequence> <arguments>\n", argv[0]);
         printf ("Valid arguments include: \n");
+        printf ("-d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option\n");
+        printf ("-vh to handle hairpins more similarily to ViennaRNA\n");
         printf ("-ns to use non-sparse or \"Modifed CCJ\" version\n");
         printf ("-ngc to not use garbage collection \n \n");
 

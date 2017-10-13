@@ -36,6 +36,8 @@ VM_final::~VM_final()
     delete [] VM;
 }
 
+/*
+SW Sep 15, 2017 -- this code is NOT USED
 void VM_final::compute_energy(int i, int j){
 
 	// here comes the copied part from simfold with all dangling energies
@@ -54,8 +56,24 @@ void VM_final::compute_energy(int i, int j){
 
 
         tmp = WM[iplus1k] + WM[kplus1jminus1];
+
+        if (DANGLE_MODE==2) {
+            int de =
+                dangle_top [sequence [i]][sequence [j]][sequence [i+1]] + dangle_bot [sequence[i]][sequence[j]][sequence[j-1]];
+
+            std::cout << "Add dangling for ML closing bp "
+                      << de
+                      << std::endl;
+
+            tmp += de;
+        }
+
         if (tmp < min_energy)
             min_energy = tmp;
+
+        if (DANGLE_MODE != 1) {
+            continue;
+        }
 
 		tmp = WM[iplus2k] + WM[kplus1jminus1] +dangle_top [sequence [i]][sequence [j]][sequence [i+1]] + misc.multi_free_base_penalty;
 		
@@ -107,6 +125,7 @@ void VM_final::compute_energy(int i, int j){
 		printf ("VM(%d,%d) energy %d\n", i, j, VM[ij]);
 
 }
+*/
 
 int VM_final::get_energy(int i, int j){
 	int ij = index[i]+j-i;

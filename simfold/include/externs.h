@@ -16,15 +16,20 @@
  ***************************************************************************/
 
 // this file contains the "extern" version of the global variables. It's the mirror of globals.h.
-// Include globals.h in the driver, and externs.h in the library files. If you include globals.h 
+// Include globals.h in the driver, and externs.h in the library files. If you include globals.h
 // twice, you get linking errors.
- 
- 
+
+
 #ifndef EXTERNS_H
 #define EXTERNS_H
 
 #include "structs.h"
 #include "constants.h"
+
+// global for which dangle mode to use
+// mode number models Vienna RNA's -d option
+// 1 is normal, original CCJ. 2 is used for compatibility with Vienna RNA
+extern int DANGLE_MODE;
 
 extern int *known_pairings;    // used for the loss-augmented prediction
 extern int *pred_pairings;
@@ -57,7 +62,7 @@ extern int creating_model;
 
 //#if (MODEL == EXTENDED)
 extern int start_bulge;
-extern int start_internal;    
+extern int start_internal;
 extern int start_internal11;
 extern int start_internal11_C;
 extern int start_internal11_G;
@@ -68,10 +73,10 @@ extern int start_internal21_AUA;   // first, second and third
 extern int start_internal21_AUC;
 extern int start_internal21_AUG;
 extern int start_internal21_AUU;
-extern int start_internal21_CGA;  
-extern int start_internal21_CGC;  
-extern int start_internal21_CGG;  
-extern int start_internal21_CGU;  
+extern int start_internal21_CGA;
+extern int start_internal21_CGC;
+extern int start_internal21_CGG;
+extern int start_internal21_CGU;
 extern int start_internal21_GCA;
 extern int start_internal21_GCC;
 extern int start_internal21_GCG;
@@ -120,14 +125,14 @@ extern int start_internal_size;
 extern int start_bulge_size;
 extern int start_hairpin_size;
 extern int start_misc_last;       // the last misc: from misc.terminal_AU_penalty on
-extern int start_special_hl; 
+extern int start_special_hl;
 //#endif
 
 
 extern char similarity_rule[MAXNUMPARAMS][2000];
 
 extern char string_params[MAXNUMPARAMS][MAXPNAME];    // for playing with the parameters
-extern char string_params_human_readable[MAXNUMPARAMS][MAXPNAME]; 
+extern char string_params_human_readable[MAXNUMPARAMS][MAXPNAME];
 extern int num_params;
 
 extern char bbseq_left[MAXNUMPARAMS][10];   // the 5' sequence of the corresponding building block
@@ -137,7 +142,7 @@ extern char bbstr_right[MAXNUMPARAMS][10];   // the 3' structure of the correspo
 
 // this is used for parameter learning only
 extern int counter_min_dangle[NUM_DANG][NUM_DANG];                    // cell[0][1] says how many times min(dangle0,dangle1) appear, where dangle0 is x213 in the 318 nomenclature
-// there are 48 dangling ends: 24 top and 24 bottom. 
+// there are 48 dangling ends: 24 top and 24 bottom.
 
 
 extern PARAMTYPE stack [NUCL] [NUCL] [NUCL] [NUCL];
@@ -164,7 +169,7 @@ extern hairpin_tloop special_hl[MAX_SPECIAL_LOOP_NO];
 extern int nb_special_hl;
 
 // middle of asymmetric internal loops 2x2
-//extern PARAMTYPE int22mid[NUCL] [NUCL] [NUCL] [NUCL]; 
+//extern PARAMTYPE int22mid[NUCL] [NUCL] [NUCL] [NUCL];
 
 extern PARAMTYPE int11_experimental_addition   [NUCL] [NUCL] [NUCL] [NUCL] [NUCL] [NUCL];       // values to be added to the simple 10-parameter model proposed by Davis_Znosko_2007, so that we use the experimental values for these parameters
 extern PARAMTYPE int21_experimental_addition   [NUCL] [NUCL] [NUCL] [NUCL] [NUCL] [NUCL] [NUCL];       // values to be added to the simple 6-parameter model proposed by Badhwar_Znosko_2007, so that we use the experimental values for these parameters
