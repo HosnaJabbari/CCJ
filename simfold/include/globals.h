@@ -37,7 +37,6 @@ int fix_dangles = 0;
 // mode number models Vienna RNA's -d option
 // 1 is normal, original CCJ. 2 is used for compatibility with Vienna RNA
 int DANGLE_MODE = 1;
-int VIENNA_HAIRPIN = 0;
 
 int *known_pairings = NULL;    // used for the loss-augmented prediction
 int *pred_pairings = NULL;

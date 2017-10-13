@@ -54,10 +54,6 @@ int main (int argc, char *argv[])
                 if (!strcmp(arg,"-d2") || !strcmp(arg,"-dangle2"))
                     DANGLE_MODE = 2;
                 else
-                // -vh to handle hairpins more similarily to ViennaRNA
-                if (!strcmp(arg,"-vh"))
-                    VIENNA_HAIRPIN = 2;
-                else
                 // -w special simple printing option
                 if (!strcmp(arg, "-w"))
                     w = true;

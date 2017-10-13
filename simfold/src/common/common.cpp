@@ -730,11 +730,6 @@ size_penalties_class::size_penalties_class(int nb_nucleotides) {
             }
         }
 
-        if (VIENNA_HAIRPIN) {
-            // This is because right now ViennaRNA's equivalent is 30 and so is MAXLOOP_H_LAVISH
-            end = MAXLOOP_H_LAVISH;
-        }
-
         arr[type].resize(nb_nucleotides);
         // for each possible size (0..nb_nucleotides-1)
         for (int size=0; size < nb_nucleotides; size++) {
