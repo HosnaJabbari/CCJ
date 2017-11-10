@@ -46,13 +46,15 @@ int main (int argc, char *argv[])
                 if (!strcmp(arg, "-ns"))
                     cmd_line_options.set_use_sparse(false);
                 else
+		//  -d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option
+                if (!strcmp(arg,"-d2") || !strcmp(arg,"-dangle2"))
+                    DANGLE_MODE = 2;
+                else	
+			
+		// ** The following arguments are primarily debug options **
                 // -ngc Do not use garbage collection
                 if (!strcmp(arg, "-ngc"))
                     cmd_line_options.set_use_garbage_collection(false);
-                else
-                //  -d2 or -dangle2 to handle dangling ends like ViennaRNA's -d2 option
-                if (!strcmp(arg,"-d2") || !strcmp(arg,"-dangle2"))
-                    DANGLE_MODE = 2;
                 else
                 // -w special simple printing option
                 if (!strcmp(arg, "-w"))
