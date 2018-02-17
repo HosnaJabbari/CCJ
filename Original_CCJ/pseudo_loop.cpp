@@ -2859,9 +2859,9 @@ int pseudo_loop::get_e_stP(int i, int j){
         // Ian Wark Feb 2018
         // Need to check if i and j can actually pair first.
         // gave trouble with sequence AGGUAUGAAGUCCUAUUCGCUCCUGAUAGGAUCGACUUCAUAUUGCUUAUAUAUGUGCUAACGCACAUAUAUAAAUGCUCAUGCAAAACUGCAUGAAUGCCCCUAAGGGAUGC
-	if (!can_pair(i,j)) {
+	if (!can_pair(int_sequence[i],int_sequence[j])) {
             return INF;
-        }
+    }
 
 	int ss = S->get_energy(i,j,int_sequence);
 	if (ss < INF/2){
