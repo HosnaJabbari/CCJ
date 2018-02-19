@@ -10,11 +10,17 @@
 #include "trace_arrow.h"
 #include "candidate_list.h"
 
+#include "index4D.h"
+#include "matrices.h"
+
+
 class VM_final;
 class V_final;
 class pseudo_loop{
 
 public:
+    using candidate = candidate_lists::candidate;
+
     // constructor
     pseudo_loop(char *seq, V_final *V, s_hairpin_loop *H, s_stacked_pair *S, s_internal_loop *VBI, VM_final *VM);
 
@@ -28,13 +34,9 @@ public:
 
     bool sparsify;
     bool avoid_candidates = true;  // Don't create a trace arrow if will point to an already existing candidate
-    bool use_garbage_collection;   // Garbage collect unneccesary trace arrows
+    bool use_garbage_collection=false;   // Garbage collect unneccesary trace arrows
     bool use_compactify = false;   // Reallocate trace arrow arrays if they are holding too much memory they don't need.
                                    // compactify is automatically turned on if garbage collection is on, because garbage collection is useless without it.
-
-    // These are set to nb_nucleotides if non-sparse
-    int MOD_2 = 2;
-    int MOD_MAXLOOP = MAXLOOP;
 
     // 0 will not print, 1 will print basic information, 2 will print verbose information
     char print_ta_info;    // Trace Arrow numbers - enabled with -pta or -pta-v
@@ -52,62 +54,55 @@ public:
     // in order to be able to check the border values consistantly
     // I am adding these get functions
 
-    // getter functions for nested substructures
+    template<MType type>
+    int calc_PX(const Index4D &x);
 
-    // nested substr in a regular multiloop
-    //int get_WM(int i, int j); // in base pair maximization, there is no difference between the two
-    //int get_WMP(int i, int j);
+    int calc_PX(const Index4D &x, MType type);
 
-    // nested substr in a multiloop that spans a band
-    int get_WB(int i, int j); // in base pair maximization, there is no difference between the two
-    int get_WBP(int i, int j);
+    int calc_P(int i, int j);
 
-    // nested substr in a pseudoloop
-    int get_WP(int i, int j); // in base pair maximization, there is no difference between the two
-    int get_WPP(int i, int j);
+    int
+    calc_PfromX(const Index4D &x, MType type);
 
-    int get_P(int i, int j);
-    int get_PK(int i,int j, int k, int l);
-    int get_PL(int i,int j, int k, int l);
-    int get_PR(int i,int j, int k, int l);
-    int get_PM(int i,int j, int k, int l);
-    int get_PO(int i,int j, int k, int l);
+    template<class Penalty>
+    int
+    penalty(const Index4D &x, Penalty p, MType type);
 
-    int get_PfromL(int i, int j, int k, int l);
-    int get_PfromR(int i, int j, int k, int l);
-    int get_PfromM(int i, int j, int k, int l);
-    int get_PfromO(int i, int j, int k, int l);
+    int calc_PfromL(int i, int j, int k, int l);
+    int calc_PfromR(int i, int j, int k, int l);
+    int calc_PfromM(int i, int j, int k, int l);
+    int calc_PfromO(int i, int j, int k, int l);
 
+    int
+    get_3D_helper(int **m, int i, int j, int k, int l);
 
-    int get_PLiloop(int i,int j, int k, int l);
-    //int get_PLiloop5(int i,int j, int k, int l,int s);
-    int get_PLmloop(int i,int j, int k, int l);
-    int get_PLmloop10(int i,int j, int k, int l);
-    int get_PLmloop01(int i,int j, int k, int l);
-    int get_PLmloop00(int i,int j, int k, int l);
+    int
+    get_3D_helper(int ***m, int modulo, int i, int j, int k, int l);
 
-    int get_PRiloop(int i,int j, int k, int l);
-    //int get_PRiloop5(int i,int j, int k, int l,int s);
-    int get_PRmloop(int i,int j, int k, int l);
-    int get_PRmloop10(int i,int j, int k, int l);
-    int get_PRmloop01(int i,int j, int k, int l);
-    int get_PRmloop00(int i,int j, int k, int l);
+    // the methods get_P?iloop return the best energy of the iloop case
+    // and set best_d_ and best_dp_ to the inner base pair ends
+    // on success (i.e. if returned energy <INF/2)
 
-    int get_PMiloop(int i,int j, int k, int l);
-    //int get_PMiloop5(int i,int j, int k, int l,int s);
-    int get_PMmloop(int i,int j, int k, int l);
-    int get_PMmloop10(int i,int j, int k, int l);
-    int get_PMmloop01(int i,int j, int k, int l);
-    int get_PMmloop00(int i,int j, int k, int l);
+    int
+    calc_PXiloop(const Index4D &x, MType type);
+    int
+    calc_PXmloop(const Index4D &x, MType type);
 
-    int get_POiloop(int i,int j, int k, int l);
-    //int get_POiloop5(int i,int j, int k, int l,int s);
-    int get_POmloop(int i,int j, int k, int l);
-    int get_POmloop10(int i,int j, int k, int l);
-    int get_POmloop01(int i,int j, int k, int l);
-    int get_POmloop00(int i,int j, int k, int l);
+    int calc_PLiloop(int i,int j, int k, int l);
+    //int calc_PLiloop5(int i,int j, int k, int l,int s);
+    int calc_PLmloop(int i,int j, int k, int l);
 
+    int calc_PRiloop(int i,int j, int k, int l);
+    //int calc_PRiloop5(int i,int j, int k, int l,int s);
+    int calc_PRmloop(int i,int j, int k, int l);
 
+    int calc_PMiloop(int i,int j, int k, int l);
+    //int calc_PMiloop5(int i,int j, int k, int l,int s);
+    int calc_PMmloop(int i,int j, int k, int l);
+
+    int calc_POiloop(int i,int j, int k, int l);
+    //int calc_POiloop5(int i,int j, int k, int l,int s);
+    int calc_POmloop(int i,int j, int k, int l);
 
     // int is_weakly_closed(int i, int j);
     //int is_empty_region(int i, int j);
@@ -156,143 +151,157 @@ private:
     //int needs_computation; // This global variable is used so that we don't compute energies in backtracking
 
 
-    //int *WP;				// the loop inside a pseudoknot (in general it looks like a W but is inside a pseudoknot) // in base pair maximization, there is no difference between the two
-    int *WPP;				// similar to WP but has at least one base pair
+    TriangleMatrix WP;				// the loop inside a pseudoknot (in general it looks like a W but is inside a pseudoknot) // in base pair maximization, there is no difference between the two
+    TriangleMatrix WPP;				// similar to WP but has at least one base pair
     // Hosna, Feb 14, 2014
     // WM and Vm recurrences in HFold and CCJ are similar, so I am keeping them here for CCJ similar to HFold
     // i.e. WM is implemented in VM_final
     //int *WM;				// the loop inside a regular multiloop // in base pair maximization, there is no difference between the two
     //int *WMP;				// similar to WM but has at least one base pair
-    //int *WB;				// the loop inside a multiloop that spans a band // in base pair maximization, there is no difference between the two
-    int *WBP;				// similar to WB but has at least one base pair
+    TriangleMatrix WB;				// the loop inside a multiloop that spans a band // in base pair maximization, there is no difference between the two
+    TriangleMatrix WBP;				// similar to WB but has at least one base pair
 
-    int *P;					// the main loop for pseudoloops and bands
-    int **PK;				// MFE of a TGB structure over gapped region [i,j] U [k,l]
-    int ***PL;				// MFE of a TGB structure s.t. i.j is paired
-    int **PR;				// MFE of a TGB structure s.t. k.l is paired
-    int **PM;				// MFE of a TGB structure s.t. j.k is paired
-    int ***PO;				// MFE of a TGB structure s.t. i.l is paired
+    TriangleMatrix P;					// the main loop for pseudoloops and bands
+    MatrixSlices3D PK;				// MFE of a TGB structure over gapped region [i,j] U [k,l]
+    MatrixSlices3D PL;				// MFE of a TGB structure s.t. i.j is paired
+    MatrixSlices3D PR;				// MFE of a TGB structure s.t. k.l is paired
+    MatrixSlices3D PM;				// MFE of a TGB structure s.t. j.k is paired
+    MatrixSlices3D PO;				// MFE of a TGB structure s.t. i.l is paired
 
     // transition recurrences
-    int ***PfromL;
-    int **PfromR;
-    int **PfromM;
-    int ***PfromO;
+    MatrixSlices3D PfromL;
+    MatrixSlices3D PfromR;
+    MatrixSlices3D PfromM;
+    MatrixSlices3D PfromO;
 
     // internal loops and multi loops that span a band
-    //int **PLiloop;
-    //int ***PLiloop5;
-    //int **PLmloop;
-    int ***PLmloop10;
-    int ***PLmloop01;
-    int **PLmloop00;
+    MatrixSlices3D PLmloop1;
+    MatrixSlices3D PLmloop0;
 
+    MatrixSlices3D PRmloop1;
+    MatrixSlices3D PRmloop0;
 
-    //int **PRiloop;
-    //int ***PRiloop5;
-    //int **PRmloop;
-    int **PRmloop10;
-    int **PRmloop01;
-    int **PRmloop00;
+    MatrixSlices3D PMmloop1;
+    MatrixSlices3D PMmloop0;
 
-
-    //int **PMiloop;
-    //int ***PMiloop5;
-    //int **PMmloop;
-    int **PMmloop10;
-    int **PMmloop01;
-    int **PMmloop00;
-
-
-    //int **POiloop;
-    //int ***POiloop5;
-    //int **POmloop;
-    int ***POmloop01;
-    int ***POmloop10;
-    int **POmloop00;
+    MatrixSlices3D POmloop1;
+    MatrixSlices3D POmloop0;
 
     // Ian Wark Jan 23, 2017
     // Candidate Lists (candidate type is in h_struct.h)
     // 3D arrays pointing to linked lists where candidates point to the next in the list
     // Actually implemented as 2D arrays accessed by [j][kl]
-    candidate_list *PLmloop00_CL;
-    candidate_list *POmloop00_CL;
-    candidate_list *PfromL_CL;
-    candidate_list *PfromO_CL;
-    // This is an array of [nb_nucleotides] forward lists
-    std::forward_list<candidate_PK> *PK_CL;
+    candidate_lists *PLmloop0_CL;
+    candidate_lists *POmloop0_CL;
+    candidate_lists *PfromL_CL;
+    candidate_lists *PfromO_CL;
 
-    void push_candidate_PK(int d, int j, int k, int l, int w)
-    {
-        PK_CL[l].push_front(candidate_PK(d,j,k,w));
-    }
+    // SW - add candidate lists for M and R mloops
+    candidate_lists *PMmloop0_CL;
+    candidate_lists *PRmloop0_CL;
 
-    // returns whether there is a candidate in that list at that location
-    bool is_candidate(int i, int j, int k, int l, std::forward_list<candidate_PK>* CL) const
-    {
-        return (find_candidate(i,j,k,l,CL) != nullptr);
-    }
+    // SW - add candidate lists for fromM and fromR
+    candidate_lists *PfromM_CL;
+    candidate_lists *PfromR_CL;
 
-    /**
-     * Find candidate in PK candidate list CL
-     *
-     * @param i
-     * @param j
-     * @param k
-     * @param l
-     * @returns if failure returns nullptr, else candidate_PK
-     */
-    const candidate_PK* find_candidate(int i, int j, int k, int l, std::forward_list<candidate_PK>* CL) const {
-        int prev_j = 0, prev_d = 0, prev_k = 0;
+    CandidateListsPK PK_CL;
 
-        // j is always ascending (or equal)
-        // d is always descending (or equal)
-        // k is always ascending (or equal
-        for (const candidate_PK &c : PK_CL[l]) {
-        //while (c != NULL && (c->j() <= i || c->d() >= j || c->k() <= k)) {
-            //assert(c->j() > prev_j || c->d() < prev_d || c->k() > prev_k);
-            //prev_j = c->j(); prev_d = c->d(); prev_k = c->k();
-
-            if (c.j() == i && c.d() == j && c.k() == k) { return &c; }
-        }
-        // No candidate found in CL with that i
-        return nullptr;
-    }
-
-    /**
-    * Looks through candidate list CL for energy value e
-    *
-    * @param i
-    * @param j
-    * @param k
-    * @param l
-    * @param srctype - type of source matrix (P_PL, P_PfromL, etc.)
-    * @param tgttype - type of target matrix (P_PL, P_PfromL, etc.)
-    * @param e - energy value
-    * @param CL - candidate list to look through
-    */
-    void trace_candidate(int i, int j, int k, int l, char srctype, char tgttype, energy_t e, candidate_list *CL);
-    void trace_candidate_continue(int i, int j, int k, int l, int m, int n, int o, int p, char srctype, char tgttype, const candidate *c);
+    // /**
+    // * Looks through candidate list CL for energy value e
+    // *
+    // * @param i
+    // * @param j
+    // * @param k
+    // * @param l
+    // * @param srctype - type of source matrix (P_PL, P_PfromL, etc.)
+    // * @param tgttype - type of target matrix (P_PL, P_PfromL, etc.)
+    // * @param e - energy value
+    // * @param CL - candidate list to look through
+    // */
+    // void trace_candidate(int i, int j, int k, int l, char srctype, char tgttype, int e, candidate_lists *CL);
+    // void trace_candidate_continue(int i, int j, int k, int l, int m, int n, int o, int p, char srctype, char tgttype, const candidate *c);
 
 
-    /**
-    * Looks through candidate list CL for energy value e
-    *
-    * @param i
-    * @param j
-    * @param k
-    * @param l
-    * @param srctype - type of source matrix (P_P, P_PK, etc.)
-    * @param tgttype - type of target matrix (P_P, P_PK, etc.)
-    * @param e - energy value
-    * @param CL - candidate list to look through
-    */
-    void trace_candidate(int i, int j, int k, int l, char srctype, char tgttype, energy_t e, std::forward_list<candidate_PK> *CL);
+    // /**
+    // * Looks through candidate list CL for energy value e
+    // *
+    // * @param i
+    // * @param j
+    // * @param k
+    // * @param l
+    // * @param srctype - type of source matrix (P_P, P_PK, etc.)
+    // * @param tgttype - type of target matrix (P_P, P_PK, etc.)
+    // * @param e - energy value
+    // * @param CL - candidate list to look through
+    // */
+    // void trace_candidate(int i, int j, int k, int l, char srctype, char tgttype, int e, std::forward_list<candidate_PK> *CL);
 
 
     // Ian Wark Feb 8, 2017
     // Trace arrows
     MasterTraceArrows *ta;
+
+    // SW some precomputation for optimization
+    // caching can_pair saves almost 3% runtime (still only demonstrating
+    // potentials)
+    std::vector<bool> can_pair_;
+    void
+    init_can_pair() {
+        can_pair_.resize(nb_nucleotides*(nb_nucleotides+1)/2);
+        for (int i=0; i<nb_nucleotides; i++) {
+            for (int j=i+1; j<nb_nucleotides; j++) {
+                int ij = index[i]+j-i;
+                can_pair_[ij] = ::can_pair(int_sequence[i],int_sequence[j]);
+            }
+        }
+    }
+
+    int can_pair(int i, int j) const {
+        return can_pair_[index[i]+j-i];
+    }
+
+    //! @brief array for pre-computed e_intP interior loop energies
+    //! SW precomputing internal loop energy yields tremendous speedup
+    std::vector<std::vector<int>> eIntP_;
+
+    //! precompute e_intP
+    void
+    init_eIntP() {
+        eIntP_.resize( nb_nucleotides*(nb_nucleotides+1)/2 );
+        for (int i=0; i<nb_nucleotides; i++) {
+            for (int j=i+1; j<nb_nucleotides; j++) {
+                int ij = index[i]+j-i;
+                eIntP_[ij].resize(MAXLOOP*MAXLOOP);
+                for (int x = 0; x < MAXLOOP; x++) {
+                    for (int xp = 0; xp < MAXLOOP && i+x+1+TURN < j-xp-1 ; xp++) {
+                        int xxp = x*MAXLOOP+xp;
+                        eIntP_[ij][xxp] = calc_e_intP(i,i+x+1,j-xp-1,j);
+                    }
+                }
+            }
+        }
+    }
+
+    //! @get e_intP from array
+    //! @see calc_e_intP()
+    int get_e_intP(int i, int d, int dp, int j) const {
+        int x = d-i-1;
+        int xp = j-dp-1;
+        assert(i<d && dp<j);
+        assert(x<MAXLOOP);
+        assert(xp<MAXLOOP);
+
+        if (! ( d + TURN < dp ) ) {
+            std::cerr << "get_e_intP "<<i<< " "<<d<<" "<<dp<< " "<<j<<" "<<std::endl;
+        }
+        assert(d + TURN < dp);
+
+        int ij = index[i]+j-i;
+        int xxp = x*MAXLOOP+xp;
+
+        return
+            eIntP_[ ij ][ xxp ];
+    }
 
 public:
     void print_PK_CL_size();
@@ -301,9 +310,9 @@ public:
     // prints infromation on candidate lists for each list
     void print_CL_sizes_verbose();
 
-    void gc_trace_arrows(size_t i) {
+    void gc_trace_arrows(int i) {
         //printf("gc_trace_arrows(%d)\n",i);
-        if ( sparsify && use_garbage_collection && i+MAXLOOP+1 <= nb_nucleotides) {
+        if ( sparsify && use_garbage_collection && i+MAXLOOP+1 < nb_nucleotides) {
             ta->garbage_collect(i + MAXLOOP + 1);
             // compactify is needed to get any bonus from garbage collection
             ta->compactify();
@@ -312,12 +321,19 @@ public:
 
     // how useful is compactify for anything other than trace arrows?
     // moderately. Space gain is not huge but neither is slow down
+    // SW: (unlike tas) the candidate lists never shrink; therefore compactify should not be
+    // used for candidate lists
+    //
     void compactify() {
         if (sparsify && use_compactify) {
-            PfromL_CL->compactify();
-            PfromO_CL->compactify();
-            PLmloop00_CL->compactify();
-            POmloop00_CL->compactify();
+            // PfromL_CL->compactify();
+            // PfromM_CL->compactify();
+            // PfromR_CL->compactify();
+            // PfromO_CL->compactify();
+            // PLmloop0_CL->compactify();
+            // PMmloop0_CL->compactify();
+            // PRmloop0_CL->compactify();
+            // POmloop0_CL->compactify();
 
             if (!use_garbage_collection)
                 ta->compactify();
@@ -335,7 +351,7 @@ public:
     }
 
 private:
-    void get_PK_CL_size(int &candidates, int &empty_lists);
+    void calc_PK_CL_size(int &candidates, int &empty_lists);
     //int *weakly_closed;		// the array which is keeping track of which regions are weakly closed
     //int *not_paired_all;	// the array which keeps track of empty regions
     int *index;				// the array to keep the index of two dimensional arrays like weakly_closed
@@ -346,77 +362,271 @@ private:
 
     void allocate_space_nonsparse();
 
+    bool impossible_case(int i, int l) const;
+
+    bool impossible_case(const Index4D &x) const;
+
+    // output parameters of generic_decomposition function
+    // and recompute PL functions
+    int best_d_; //!< best split point (end of the gap matrix or first interior loop end)
+    int best_dp_; //!< best second split point (interior loop)
+    int best_branch_; //!< index of best branch
+    bool decomposing_branch_; //!< whether best branch is decomposing
+    int best_target_type_;
+    int best_target_energy_;
+
+    // cases for the generic decomposition
+    static const int CASE_12G2 = 1<<0;
+    static const int CASE_12G1 = 1<<1;
+    static const int CASE_1G21 = 1<<2;
+    static const int CASE_1G12 = 1<<3;
+    static const int CASE_L = CASE_12G2 | CASE_12G1;
+    static const int CASE_M = CASE_12G1 | CASE_1G21;
+    static const int CASE_R = CASE_1G21 | CASE_1G12;
+    static const int CASE_O = CASE_12G2 | CASE_1G12;
+    static const int CASE_PL = 1<<4;
+    static const int CASE_PM = 1<<5;
+    static const int CASE_PR = 1<<6;
+    static const int CASE_PO = 1<<7;
+
+    //! @brief dummy penalty function (constant 0)
+    static int zero(int i, int j) {return 0;}
+
+    /**
+     * @brief generic computation of gap matrix "multiloop" decompositions
+     * @param decomp_cases decomposition cases (bit-encoded: 1=12G2, 2=12G1, 4=1G21, 8=1G12)
+     * @param CL candidate list, if given perform sparse computation
+     * @param get_wb access function for WB or WBP matrix
+     * @param get_entry access function for gap matrix entry
+     * @param LMRO_cases non-decomposition cases (bit-encoded: 1=L, 2=M, 4=R, 8=O)
+     * @param penalty penalty function for non-decomposition cases
+     * @returns minimum energy
+     *
+     * @note sets the variables best_d_, best_branch_, and flag
+     * decomposing_branch_.
+     */
+    template<class Penalty=int(*)(int,int)>
+    int
+    generic_decomposition(int i, int j, int k, int l,
+                          int decomp_cases,
+                          candidate_lists *CL,
+                          const TriangleMatrix &w,
+                          const MatrixSlices3D &PX,
+                          int LMRO_cases = 0,
+                          Penalty penalty = zero);
+
+
+    //! decomposition case by type
+    int
+    decomp_cases_by_mtype(MType type);
+
+    //! non-decomposing cases in the from recursions by type
+    //! @param type
+    int
+    lmro_cases_in_fromX_by_mtype(MType type) const {
+        static std::array<int, 4> lrmo{
+            CASE_PM | CASE_PR | CASE_PO, // fromL
+            CASE_PL | CASE_PR,           // fromM
+            CASE_PM | CASE_PO,           // fromR
+            CASE_PL | CASE_PR            // fromO
+        };
+        return lrmo[static_cast<int>(type)];
+    }
+
+    //! char P_ matrix identifier by type
+    char
+    pid_by_mtype(MType type) {
+        static std::array<char,4> pid{P_PL,P_PM,P_PR,P_PO};
+        return pid[static_cast<int>(type)];
+    }
+
+    //! char P_ matrix identifier by type
+    MType
+    mtype_by_pid(char pid) {
+        switch(pid) {
+            case P_PL: return MType::L;
+            case P_PM: return MType::M;
+            case P_PR: return MType::R;
+            case P_PO: return MType::O;
+        }
+        assert(false);
+        return MType::L;
+    }
+
+    //! char P_ matrix identifier by type
+    char
+    mloop1_pid_by_mtype(MType type) {
+        static std::array<char,4> pid{P_PLmloop1,P_PMmloop1,P_PRmloop1,P_POmloop1};
+        return pid[static_cast<int>(type)];
+    }
+
+    //! char P_ matrix identifier by type
+    char
+    from_pid_by_mtype(MType type) {
+        static std::array<char,4> pid{P_PfromL,P_PfromM,P_PfromR,P_PfromO};
+        return pid[static_cast<int>(type)];
+    }
+
+    //! select corresponding PX matrix by type
+    MatrixSlices3D &
+    PX_by_mtype(MType type);
+
+    //! select corresponding fromX matrix by type
+    MatrixSlices3D &
+    fromX_by_mtype(MType type);
+
+    //! select corresponding fromX matrix by type
+    MatrixSlices3D &
+    PXmloop0_by_mtype(MType type);
+
+    //! select corresponding fromX matrix by type
+    MatrixSlices3D &
+    PXmloop1_by_mtype(MType type);
+
+    candidate_lists *
+    mloop0_cl_by_mtype(MType type);
+
+    candidate_lists *
+    from_cl_by_mtype(MType type);
+
+    TraceArrows &
+    tas_by_mtype(MType type);
+
+
+    //! @brief helper for generic computation of PL/M/R/O function
+    int
+    compute_PX_helper(const Index4D &x, MType type);
+
+    //! @brief generic computation of PL/M/R/O functions
+    void
+    compute_PX(Index4D x, MType type);
+
+
     //void compute_WM(int i, int j); // in base pair maximization, there is no difference between the two
     //void compute_WMP(int i, int l);
-    //void compute_WB(int i, int j); // in base pair maximization, there is no difference between the two
+    void compute_WB(int i, int j);
     void compute_WBP(int i, int l);
-    //void compute_WP(int i, int j); // in base pair maximization, there is no difference between the two
+    void compute_WP(int i, int j);
     void compute_WPP(int i, int l);
 
     void compute_P_sp(int i, int l);
     void compute_P_ns(int i, int l);
     void compute_PK(int i,int j, int k, int l);
-    void compute_PL(int i,int j, int k, int l);
-    void compute_PR(int i,int j, int k, int l);
-    void compute_PM(int i,int j, int k, int l);
-    void compute_PO(int i,int j, int k, int l);
 
-
-    void compute_PfromL_sp(int i, int j, int k, int l);
-    void compute_PfromL_ns(int i, int j, int k, int l);
+    void compute_PfromL(int i, int j, int k, int l);
     void compute_PfromR(int i, int j, int k, int l);
     void compute_PfromM(int i, int j, int k, int l);
-    void compute_PfromO_sp(int i, int j, int k, int l);
-    void compute_PfromO_ns(int i, int j, int k, int l);
+    void compute_PfromO(int i, int j, int k, int l);
+
+    void compute_PLmloop1(int i,int j, int k, int l);
+    void compute_PLmloop0(int i,int j, int k, int l);
+
+    void compute_PRmloop1(int i,int j, int k, int l);
+    void compute_PRmloop0(int i,int j, int k, int l);
+
+    void compute_PMmloop1(int i,int j, int k, int l);
+    void compute_PMmloop0(int i,int j, int k, int l);
+
+    void compute_POmloop1(int i,int j, int k, int l);
+    void compute_POmloop0(int i,int j, int k, int l);
+
+    int
+    Liloop_energy(const Index4D &x, int d, int dp);
+    int
+    Miloop_energy(const Index4D &x, int d, int dp);
+    int
+    Riloop_energy(const Index4D &x, int d, int dp);
+    int
+    Oiloop_energy(const Index4D &x, int d, int dp);
+    int
+    iloop_energy(const Index4D &x, int d, int dp, MType type);
 
 
-    //void compute_PLiloop(int i,int j, int k, int l);
-    //void compute_PLiloop5(int i,int j, int k, int l,int s);
-    //void compute_PLmloop(int i,int j, int k, int l);
-    void compute_PLmloop10_sp(int i,int j, int k, int l);
-    void compute_PLmloop10_ns(int i,int j, int k, int l);
-    void compute_PLmloop01(int i,int j, int k, int l);
-    void compute_PLmloop00_sp(int i,int j, int k, int l);
-    void compute_PLmloop00_ns(int i,int j, int k, int l);
+    int
+    recompute_PX(const Index4D &x, MType type);
 
-    //void compute_PRiloop(int i,int j, int k, int l);
-    //void compute_PRiloop5(int i,int j, int k, int l,int s);
-    //void compute_PRmloop(int i,int j, int k, int l);
-    void compute_PRmloop10(int i,int j, int k, int l);
-    void compute_PRmloop01(int i,int j, int k, int l);
-    void compute_PRmloop00(int i,int j, int k, int l);
+    // recompute all PK entries i,j,k,l for fixed i and all j,k,l: i<=j<k<=max_l
+    // fill matrix slice at i, copy candidate energies, recompute non-candidates
+    void recompute_slice_PK(const Index4D &x);
 
-    //void compute_PMiloop(int i,int j, int k, int l);
-    //void compute_PMiloop5(int i,int j, int k, int l,int s);
-    //void compute_PMmloop(int i,int j, int k, int l);
-    void compute_PMmloop10(int i,int j, int k, int l);
-    void compute_PMmloop01(int i,int j, int k, int l);
-    void compute_PMmloop00(int i,int j, int k, int l);
+    void
+    recompute_slice_PXdecomp(const Index4D &x,
+                             int decomp_cases,
+                             candidate_lists *CL,
+                             const TriangleMatrix &w,
+                             MatrixSlices3D &PXsrc,
+                             MatrixSlices3D &PXtgt
+                             );
 
-    //void compute_POiloop(int i,int j, int k, int l);
-    //void compute_POiloop5(int i,int j, int k, int l,int s);
-    //void compute_POmloop(int i,int j, int k, int l);
-    void compute_POmloop10_sp(int i,int j, int k, int l);
-    void compute_POmloop10_ns(int i,int j, int k, int l);
-    void compute_POmloop01(int i,int j, int k, int l);
-    void compute_POmloop00_sp(int i,int j, int k, int l);
-    void compute_POmloop00_ns(int i,int j, int k, int l);
+    void
+    recompute_slice_PfromX(const Index4D &x, MType type);
+
+    // recompute a slice of PXmloop0
+    // for fix i, i<=j<=max_j min_k<=k<=l<=max_l
+    void
+    recompute_slice_PXmloop0(const Index4D &x, MType type);
+
+    // recompute a slice of PXmloop1
+    // for fix i, i<=j<=max_j min_k<=k<=l<=max_l
+    void
+    recompute_slice_PXmloop1(const Index4D &x, MType type);
+
+    void
+    trace_PK(const Index4D &x, int e);
+
+    void
+    trace_PfromX(const Index4D &x, int e, MType type);
+
+    void
+    trace_PX(const Index4D &x, int e, MType type);
+
+    void trace_PLmloop(int i, int j, int k, int l, int e);
+    void trace_PLmloop1(int i, int j, int k, int l, int e);
+    void trace_PLmloop0(int i, int j, int k, int l, int e);
+
+    void trace_PMmloop(int i, int j, int k, int l, int e);
+    void trace_PMmloop1(int i, int j, int k, int l, int e);
+    void trace_PMmloop0(int i, int j, int k, int l, int e);
+
+    void trace_PRmloop(int i, int j, int k, int l, int e);
+    void trace_PRmloop1(int i, int j, int k, int l, int e);
+    void trace_PRmloop0(int i, int j, int k, int l, int e);
+
+    void trace_POmloop(int i, int j, int k, int l, int e);
+    void trace_POmloop1(int i, int j, int k, int l, int e);
+    void trace_POmloop0(int i, int j, int k, int l, int e);
+
 
     // I have to calculate the e_stP in a separate function
-    int get_e_stP(int i, int j);
-    int get_e_intP(int i,int ip, int jp, int j);
+    int calc_e_stP(int i, int j);
+    int calc_e_intP(int i,int ip, int jp, int j);
 
     /**
     * @param location of source
     * @param source type
     */
-    void trace_continue(int i, int j, int k, int l, char srctype, energy_t e);
+    void trace_continue(int i, int j, int k, int l, char srctype, int e);
+    void trace_continue(const Index4D &x, char srctype, int e) {
+        trace_continue(x.i(), x.j(), x.k(), x.l(), srctype, e);
+    }
+
 
     void trace_update_f(int i, int j, int k, int l, char srctype);
-    void trace_update_f_with_target(int i, int j, int k, int l, char srctype, char tgttype);
+    void trace_update_f(int i, int j, int k, int l, char srctype, char tgttype);
+
+    void
+    trace_update_f(const Index4D &x, char srctype) {
+        trace_update_f(x.i(), x.j(), x.k(), x.l(), srctype);
+    }
+
+    void
+    trace_update_f(const Index4D &x, char srctype, char tgttype) {
+        trace_update_f(x.i(), x.j(), x.k(), x.l(), srctype, tgttype);
+    }
+
 
     // Takes a char denoting type and prints out a string for that type
-    // P_POmloop10 prints "POmloop10" instead of '-', its char representation
+    // P_POmloop1 prints "POmloop1" instead of its char representation
     void print_type(char type);
 
     // used for backtracking

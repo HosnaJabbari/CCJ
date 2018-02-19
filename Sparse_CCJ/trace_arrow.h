@@ -1,39 +1,15 @@
 #ifndef TRACE_ARROW_H
 #define TRACE_ARROW_H
 
+#include <unordered_map>
 #include "base.h"
 #include "simple_map.h"
 #include "h_common.h"
-/**
- * @brief Trace Arrow Key Pair
- * Used in TraceArrows
- * simply a pair of integers to keep track of k,l for a trace arrows source
- **/
-typedef struct ta_key_pair
-{
-    // should only be used during simplemap reallocation
-    ta_key_pair() {}
+#include "index4D.h"
 
-    ta_key_pair(index_t k, index_t l);
 
-    index_t first;
-    index_t second;
-    // value is first*ta_n - second
-    unsigned int value_;
+using ta_key_t=int;
 
-    int value() const {
-        return value_;
-    }
-
-    bool operator< (const ta_key_pair& right) const {
-        return value() < right.value();
-    }
-
-    bool operator==(const ta_key_pair& right) const {
-        return value() == right.value();
-    }
-
-} ta_key_pair;
 
 /**
  * @brief Trace arrow
@@ -48,7 +24,8 @@ private:
     /// TODO don't need srctype (won't save space with 3 chars vs. 2 though)
     char srctype_;
     char tgttype_;
-    char W_type_;
+
+    unsigned short ref_count; //!< counts how many trace arrows point to the source
 
     // The indices of the location the trace arrow points to.
     // The source i,j,k,l will always be available because that is where the trace arrow is stored (TraceArrows[ij].find(kl))
@@ -57,16 +34,7 @@ private:
     index_t k_;
     index_t l_;
 
-    // If a source also has a trace arrow to WB, WBP, WP, or WPP
-    // I don't like this, but doing something like having a pointer would just
-    // take up nearly the same space with a possible loss of space due to alignment of chars
-    // (just one char takes up 8 bytes, whereas 3 chars still take up 8 bytes)
-    index_t W_i_;
-    index_t W_l_;
-
     energy_t energy_; //!<target energy
-
-    unsigned short ref_count; //!< counts how many trace arrows point to the source
 
 public:
 
@@ -76,26 +44,16 @@ public:
      * @param k
      * @param l
      */
-    TraceArrow(index_t src_i, index_t src_j, index_t src_k, index_t src_l,
-    index_t i,index_t j,index_t k,index_t l,
+    TraceArrow(int src_i, int src_j, int src_k, int src_l,
+    int i,int j,int k,int l,
     energy_t e, unsigned char srctype, unsigned char tgttype)
-	: energy_(e),ref_count(0), srctype_(srctype), tgttype_(tgttype),
-      i_(i), j_(j), k_(k), l_(l), W_type_(-1), W_i_(-1), W_l_(-1)
+	:  srctype_(srctype), tgttype_(tgttype), ref_count(0),
+           i_(i), j_(j), k_(k), l_(l), energy_(e)
     {
     }
 
-    // Other things are for when it also has a WB, WBP, WP, or WPP
-    TraceArrow(index_t src_i, index_t src_j, index_t src_k, index_t src_l,
-    index_t i,index_t j,index_t k,index_t l,
-    energy_t e, unsigned char srctype, unsigned char tgttype,
-    index_t W_type, index_t W_i, index_t W_l)
-	: energy_(e),ref_count(0), srctype_(srctype), tgttype_(tgttype),
-	  i_(i), j_(j), k_(k), l_(l), W_type_(W_type), W_i_(W_i), W_l_(W_l)
-    {
-    }
-
-    void replace(index_t src_i, index_t src_j, index_t src_k, index_t src_l,
-    index_t i, index_t j, index_t k, index_t l,
+    void replace(int src_i, int src_j, int src_k, int src_l,
+    int i, int j, int k, int l,
     energy_t e, unsigned char srctype, unsigned char tgttype) {
         i_ = i;
         j_ = j;
@@ -111,21 +69,14 @@ public:
      */
     TraceArrow() {}
 
-    //TraceArrow(TraceArrow const&) {}
-    //TraceArrow& operator=(TraceArrow const&) {}
-
     // Getters
     unsigned char source_type() const { return srctype_;}
     unsigned char target_type() const { return tgttype_;}
-    unsigned char W_type() const { return W_type_;}
 
-    index_t i() const {return i_;}
-    index_t j() const {return j_;}
-    index_t k() const {return k_;}
-    index_t l() const {return l_;}
-
-    index_t W_i() const { return W_i_;}
-    index_t W_l() const { return W_l_;}
+    int i() const {return i_;}
+    int j() const {return j_;}
+    int k() const {return k_;}
+    int l() const {return l_;}
 
     energy_t target_energy() const {return energy_;}
     index_t source_ref_count() const {return ref_count;}
@@ -143,6 +94,8 @@ public:
 
 
 
+class MasterTraceArrows;
+
 /**
  * @brief Collection of trace arrows
  *
@@ -152,12 +105,19 @@ public:
  * several statistics on TAs.
  */
 class TraceArrows {
-
 public:
-    typedef SimpleMap< ta_key_pair, TraceArrow >  trace_arrow_row_map_t;
+    friend class MasterTraceArrows;
+
+    typedef SimpleMap< ta_key_t, TraceArrow >  trace_arrow_row_map_t;
+    //typedef std::unordered_map< ta_key_t, TraceArrow >  trace_arrow_row_map_t;
+
+    //! type of data structure for the trace arrows; the single arrows
+    //! are accessed as trace_arrow_[ij][ta_key(k,l)],
+    //! where ij is the 'triangle matrix' index for (i,j)
     typedef std::vector< trace_arrow_row_map_t >  trace_arrow_map_t;
 
 private:
+
     size_t n_; //!< sequence length
     const int *index_;
 
@@ -178,25 +138,31 @@ private:
 
     char srctype_;
 
-    TraceArrows(TraceArrows const&) {}
-    TraceArrows& operator=(TraceArrows const&) {}
-
     bool use_replace_ = true;   // if false, will keep extra useless trace arrows that should have been replaced, but may help debug replace function.
 
-public:
     trace_arrow_map_t trace_arrow_;
+
+public:
+
+    ta_key_t
+    ta_key(index_t k, index_t l) const {
+        ta_key_t value = k*n_ - l;
+        assert(value > 0 && value < 4294967295);
+        return value;
+    }
+
 
     /**
      * @brief Construct for sequence of specific length
      * @param n sequence length
      */
-    TraceArrows(size_t n, char srctype);
+    TraceArrows(size_t n, char srctype, const int *index);
 
-    void
-    resize(size_t n);
+    // void
+    // resize(size_t n);
 
-    void
-    set_index(const int *index) { index_ = index; }
+    // void
+    // set_index(const int *index) { index_ = index; }
 
     void
     set_max() { ta_max_ = std::max(ta_max_,ta_count_); }
@@ -216,18 +182,10 @@ public:
                     size_t m, size_t n, size_t o, size_t p,
                     energy_t e, char srctype, char tgttype) {
         int ij = index_[i]+j-i;
-        trace_arrow_[ij].add( ta_key_pair(k,l), TraceArrow(i,j,k,l, m,n,o,p, e,srctype,tgttype));
+        trace_arrow_[ij][ta_key(k, l)] =
+            TraceArrow(i, j, k, l, m, n, o, p, e, srctype, tgttype);
     }
 
-    // Add trace arrow with extra WP, WB, WPP, WBP information
-    void
-    trace_arrow_add(size_t i, size_t j, size_t k, size_t l,
-                    size_t m, size_t n, size_t o, size_t p,
-                    energy_t e, char srctype, char tgttype,
-                    char othertype, size_t other_i, size_t other_l) {
-        int ij = index_[i]+j-i;
-        trace_arrow_[ij].add( ta_key_pair(k,l), TraceArrow(i,j,k,l, m,n,o,p, e,srctype,tgttype, othertype, other_i, other_l));
-    }
 
     /**
      * @brief Get target of trace arrow by source (const)
@@ -242,12 +200,17 @@ public:
     const TraceArrow *
     trace_arrow_from(size_t i, size_t j, size_t k, size_t l) const {
         int ij = index_[i]+j-i;
-        auto iter = trace_arrow_[ij].find(ta_key_pair(k,l));
+        auto iter = trace_arrow_[ij].find(ta_key(k,l));
 
         if (iter != trace_arrow_[ij].end())
             return &iter->second;
         else
             return nullptr;
+    }
+
+    const TraceArrow *
+    trace_arrow_from(const Index4D &x) const {
+        return trace_arrow_from(x.i(), x.j(), x.k(), x.l());
     }
 
     /**
@@ -263,7 +226,7 @@ public:
     TraceArrow *
     trace_arrow_from(size_t i, size_t j, size_t k, size_t l) {
         int ij = index_[i]+j-i;
-        auto iter = trace_arrow_[ij].find(ta_key_pair(k,l));
+        auto iter = trace_arrow_[ij].find(ta_key(k,l));
 
         if (iter != trace_arrow_[ij].end())
             return &iter->second;
@@ -283,18 +246,18 @@ public:
     bool
     exists_trace_arrow_from(size_t i, size_t j, size_t k, size_t l) const {
         int ij = index_[i]+j-i;
-        return trace_arrow_[ij].exists(ta_key_pair(k,l));
+        return trace_arrow_[ij].find(ta_key(k,l)) != trace_arrow_[ij].end();
     }
 
     void
     delete_trace_arrow(size_t i, size_t j, size_t k, size_t l) {
         int ij = index_[i]+j-i;
-        auto iter = trace_arrow_[ij].find(ta_key_pair(k,l));
+        auto iter = trace_arrow_[ij].find(ta_key(k,l));
 
         if (iter != trace_arrow_[ij].end())
             trace_arrow_[ij].erase(iter);
 
-        //trace_arrow_[ij].erase(ta_key_pair(k,l));
+        //trace_arrow_[ij].erase(ta_key(k,l));
     }
 
     /**
@@ -373,53 +336,25 @@ private:
 
 public:
     // A seperate TraceArrows for each matrix source type
-    // Unneccesarry ones such as PMiloop have been combined into others (PM in this case)
     // Explanation in comments by ta_replace in TraceArrows
     // PLiloop -> PL  PRiloop -> PR  PMiloop -> PM  POiloop -> PO
-    // PLmloop01 -> PLmloop00  POmloop01 -> POmloop00
-    TraceArrows P;
-    TraceArrows PK;
-
-    TraceArrows PfromL;
-    TraceArrows PfromR;
-    TraceArrows PfromM;
-    TraceArrows PfromO;
 
     TraceArrows PL;
     TraceArrows PR;
     TraceArrows PM;
     TraceArrows PO;
 
-    TraceArrows PLmloop;
-    TraceArrows PRmloop;
-    TraceArrows PMmloop;
-    TraceArrows POmloop;
-
-    TraceArrows PLmloop10;
-    TraceArrows PLmloop00;
-
-    TraceArrows PRmloop10;
-    TraceArrows PRmloop01;
-    TraceArrows PRmloop00;
-
-    TraceArrows PMmloop10;
-    TraceArrows PMmloop01;
-    TraceArrows PMmloop00;
-
-    TraceArrows POmloop10;
-    TraceArrows POmloop00;
-
     /**
      * @brief Construct for sequence of specific length
      * @param n sequence length
      */
-    MasterTraceArrows(size_t n);
+    MasterTraceArrows(size_t n, const int *index);
 
-    void
-    resize(size_t n);
+    // void
+    // resize(size_t n);
 
-    void
-    set_index(const int *index);
+    // void
+    // set_index(const int *index);
 
     /**
      * Register trace arrow
@@ -437,35 +372,18 @@ public:
      * @param target energy e
      */
     void
-    register_trace_arrow(size_t i, size_t j, size_t k, size_t l,
-                         size_t m, size_t n, size_t o, size_t p,
-                         energy_t e, size_t srctype, size_t tgttype);
+    register_trace_arrow(int i, int j, int k, int l,
+                         int m, int n, int o, int p,
+                         energy_t e, int srctype, int tgttype);
 
-     /**
-     * Register trace arrow
-     *
-     * @param srctype source matrix type
-     * @param i source i
-     * @param j source j
-     * @param k source k
-     * @param l source l
-     * @param tgttype target matrix type
-     * @param m target i
-     * @param n target j
-     * @param o target k
-     * @param p target l
-     * @param target energy e
-     *
-     * Next params are for when a trace arrow actually also points to WB, WBP, WP, or WPP. Explanation is in TraceArrow class.
-     * @param other_i start point
-     * @param other_l end point
-     * @param othertype other target matrix type
-     */
     void
-    register_trace_arrow(size_t i, size_t j, size_t k, size_t l,
-                         size_t m, size_t n, size_t o, size_t p,
-                         energy_t e, size_t srctype, size_t tgttype,
-                         size_t othertype, size_t other_i, size_t other_l);
+    register_trace_arrow(const Index4D &src_x,
+                         const Index4D &tgt_x,
+                         energy_t e, size_t srctype, size_t tgttype) {
+        register_trace_arrow(src_x.i(),src_x.j(),src_x.k(),src_x.l(),
+                             tgt_x.i(),tgt_x.j(),tgt_x.k(),tgt_x.l(),
+                             e, srctype, tgttype);
+    }
 
     /**
      * Increment the reference count of the source
@@ -542,7 +460,10 @@ private:
      *  @return true if that trace arrow was erased
      */
     bool
-    gc_trace_arrow(int i, int j, SimpleMap<ta_key_pair, TraceArrow>::iterator &col, TraceArrows &source);
+    gc_trace_arrow(int i,
+                   int j,
+                   TraceArrows::trace_arrow_row_map_t::iterator &col,
+                   TraceArrows &source);
 
     /** @brief Get trace arrow from the target if one exists and call gc_trace_arrow on it
     *   @param i,j,k,l - location of trace arrow
@@ -558,5 +479,11 @@ private:
 };
 
 
+inline
+std::ostream &
+operator << (std::ostream &out, const TraceArrow &a) {
+    return
+        out << "( TraceArrow )";
+}
 
 #endif // TRACE_ARROW_HH
