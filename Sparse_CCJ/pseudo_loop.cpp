@@ -3347,7 +3347,7 @@ int pseudo_loop::get_PLiloop(int i, int j, int k, int l){
     // also made it an assert since it should never happen
     assert(!(i<0 || l>= nb_nucleotides));
 
-    if (!can_pair(int_sequence[i],int_sequence[j])){
+    if (!can_pair(int_sequence[i],int_sequence[j])  || j+TURN >= k){
         return INF;
     }
 
@@ -3484,7 +3484,7 @@ int pseudo_loop::get_PRiloop(int i, int j, int k, int l){
     // also made it an assert since it should never happen
     assert(!(i<0 || l>= nb_nucleotides));
 
-    if (!can_pair(int_sequence[k],int_sequence[l])){
+    if (!can_pair(int_sequence[k],int_sequence[l])  || j+TURN >= k){
         return INF;
     }
 
@@ -3630,7 +3630,7 @@ int pseudo_loop::get_PMiloop(int i, int j, int k, int l){
     // also made it an assert since it should never happen
     assert(!(i<0 || l>= nb_nucleotides));
 
-    if (!can_pair(int_sequence[j],int_sequence[k])){
+    if (!can_pair(int_sequence[j],int_sequence[k])  || j+TURN >= k){
         return INF;
     }
 
@@ -3782,7 +3782,7 @@ int pseudo_loop::get_POiloop(int i, int j, int k, int l){
     // also made it an assert since it should never happen
     assert(!(i<0 || l>= nb_nucleotides));
 
-    if (!can_pair(int_sequence[i],int_sequence[l])){
+    if (!can_pair(int_sequence[i],int_sequence[l])  || j+TURN >= k){
         return INF;
     }
 
